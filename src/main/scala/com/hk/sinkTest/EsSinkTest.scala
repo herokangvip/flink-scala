@@ -4,7 +4,7 @@ import java.util
 
 import com.hk.transformTest.Sensor
 import org.apache.flink.api.common.functions.RuntimeContext
-import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.elasticsearch.{RequestIndexer, ElasticsearchSinkFunction}
 import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
 import org.apache.flink.streaming.connectors.redis.RedisSink

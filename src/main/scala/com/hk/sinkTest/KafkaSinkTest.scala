@@ -2,7 +2,7 @@ package com.hk.sinkTest
 
 import com.hk.transformTest.Sensor
 import org.apache.flink.api.common.serialization.SimpleStringSchema
-import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011
 
 /**
