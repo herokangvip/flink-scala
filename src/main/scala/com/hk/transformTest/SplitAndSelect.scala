@@ -21,6 +21,7 @@ object SplitAndSelect {
     })
 
     //使用split将流数据打上不同标记，结合select方法真正的分离出新的流DataStream
+    //已废弃，参考SideOutPutTest，使用ProcessFunction实现侧输出流
     val splitStream = dataStream.split(data => {
       if (data.temperature >= 30) {
         Seq("high")

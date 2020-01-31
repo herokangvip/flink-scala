@@ -1,9 +1,14 @@
 package com.hk.sinkTest
 
+import java.util.Properties
+
 import com.hk.transformTest.Sensor
 import org.apache.flink.api.common.serialization.SimpleStringSchema
+import org.apache.flink.api.common.typeutils.base.StringValueSerializer
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011.Semantic
+import org.apache.flink.streaming.util.serialization.TypeInformationKeyValueSerializationSchema
 
 /**
   * Description: kafka Sink输出
@@ -24,8 +29,18 @@ object KafkaSinkTest {
       Sensor(array(0).trim, array(1).trim.toLong, array(2).trim.toDouble).toString
     })
 
+
+    val prop = new Properties()
+    prop.setProperty("bootstrap.servers", "localhost:9092")
+    prop.setProperty("group.id", "test-group")
+    prop.setProperty("key-serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    prop.setProperty("value-serializer", "org.apache.kafka.common.serialization.StringSerializer")
+    prop.setProperty("auto.offset.reset", "latest")
     dataStream.addSink(
-      new FlinkKafkaProducer011[String]("localhost:9092", "test-topic", new SimpleStringSchema())
+      new FlinkKafkaProducer011[String]("localhost:9092","test-topic", new SimpleStringSchema())
+      /*new FlinkKafkaProducer011[String]("test-topic",prop
+        , new TypeInformationKeyValueSerializationSchema(StringValueSerializer,StringValueSerializer,
+        FlinkKafkaProducer011.Semantic.EXACTLY_ONCE)*/
     )
 
 
