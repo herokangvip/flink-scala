@@ -22,7 +22,9 @@ object SourceFromKafka {
     prop.setProperty("value-deserializer", "org.apache.kafka.common.serialization.StringSerializer")
     prop.setProperty("auto.offset.reset", "latest")
     //flink checkpoint偏移量状态也会保存，FlinkKafkaConsumer封装了保存offset的功能
-    val dataStream = env.addSource(new FlinkKafkaConsumer011[String]("test-topic", new SimpleStringSchema(), prop))
+    val consumer011 = new FlinkKafkaConsumer011[String]("test-topic", new SimpleStringSchema(), prop)
+    consumer011.setStartFromTimestamp(213214)
+    val dataStream = env.addSource(consumer011)
 
     dataStream.print().setParallelism(1)
     env.execute("SourceFromKafka")
