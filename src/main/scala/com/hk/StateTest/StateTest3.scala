@@ -73,27 +73,3 @@ object StateTest3 {
   }
 }
 
-/**
-  * 构造函数参数，IO:in、out
-  */
-class MyFlatMap(param: Double) extends RichFlatMapFunction[Sensor, (String, Double, Double)] {
-
-  var lastTemp: ValueState[Double] = _
-
-  override def open(parameters: Configuration): Unit = {
-    //初始化的时候声明state变量
-    lastTemp = getRuntimeContext.getState(new ValueStateDescriptor[Double]("lastTemp", classOf[Double]))
-  }
-
-
-  //可以直接定义或者使用生命周期方法，open
-  //lazy val lastTemp: ValueState[Double] = getRuntimeContext.getState(new ValueStateDescriptor[Double]("lastTemp", classOf[Double]))
-
-  override def flatMap(sensor: Sensor, collector: Collector[(String, Double, Double)]): Unit = {
-    if ((sensor.temperature - lastTemp.value()).abs > param) {
-      collector.collect("sensor_" + sensor.id + ":温度超限", lastTemp.value(), sensor.temperature)
-    }
-    lastTemp.update(sensor.temperature)
-  }
-
-}

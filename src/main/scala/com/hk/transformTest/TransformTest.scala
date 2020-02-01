@@ -1,5 +1,6 @@
 package com.hk.transformTest
 
+import org.apache.flink.api.common.functions.ReduceFunction
 import org.apache.flink.api.java.tuple.Tuple
 import org.apache.flink.streaming.api.scala._
 
@@ -24,9 +25,14 @@ object TransformTest {
       new Sensor(array(0).trim, array(1).trim.toLong, array(2).trim.toDouble)
     })
       //.keyBy(0).sum(2)
-      .keyBy(_.id)//keyBy函数会对数据进行hash重分区，dataStream流还是一个流只是做了重分区
-      .sum("temperature")
-      //.reduce( (x,y) => {Sensor(x.id, x.timestamp+1, y.temperature+1)})
+      .keyBy(_.id) //keyBy函数会对数据进行hash重分区，dataStream流还是一个流只是做了重分区
+      //.sum("temperature")
+      .reduce(new ReduceFunction[Sensor] {
+      override def reduce(x: Sensor, y: Sensor): Sensor = {
+        Sensor(x.id, x.timestamp + 1, y.temperature + 1)
+      }
+    })
+    //.reduce( (x,y) => {Sensor(x.id, x.timestamp+1, y.temperature+1)})
     //聚合函数sum、reduce、max、min等职能用在keyBy后，keyBy相当于groupBy
     //可以充分利用并行
     //sum测试输出
