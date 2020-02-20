@@ -20,6 +20,7 @@ object StreamWordCount {
     val port: Int = params.getInt("port")*/
     //创建流处理执行环境
     val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(3)
     //接收一个socket文本流,可以安装netcat，使用cmd执行nc -l -p 7777创建会话窗口
     val dataStrem = env.socketTextStream("localhost", 7777)
     //对每条数据处理

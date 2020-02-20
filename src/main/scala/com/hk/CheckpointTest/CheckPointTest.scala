@@ -27,7 +27,7 @@ object CheckPointTest {
 
     //开启checkpoint每分钟checkpoint一次
     env.enableCheckpointing(60000)
-    //选择checkpoint的状态后端；
+    //选择checkpoint的状态后端；一般由运维在flink集群配置文件指定
     env.setStateBackend(new FsStateBackend("hdfs://namenode:9000/flink/checkpoints"))
     //设置重启策略，也可以在配置文件配,最大三次重启，每次间隔10s
     env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3,
