@@ -18,39 +18,24 @@ import org.apache.flink.util.Collector
   */
 object SideOutPutTest {
   def main(args: Array[String]) {
-    //创建执行环境
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
-
-    val prop = new Properties()
-    prop.setProperty("bootstrap.servers", "localhost:9092")
-    prop.setProperty("group.id", "test-group")
-    prop.setProperty("key-deserializer", "org.apache.kafka.common.serialization.StringSerializer")
-    prop.setProperty("value-deserializer", "org.apache.kafka.common.serialization.StringSerializer")
-    prop.setProperty("auto.offset.reset", "latest")
-    //flink checkpoint偏移量状态也会保存，FlinkKafkaConsumer封装了保存offset的功能
-    val kafkaDataStream = env.addSource(new FlinkKafkaConsumer011[String]("test-topic", new SimpleStringSchema(), prop))
-
-
-    val dataStream: DataStream[Sensor] = kafkaDataStream.map(data => {
+    //flatMap可以完成map和filter的操作，map和filter有明确的语义，转换和过滤更加直白
+    val dataFromFile: DataStream[String] = env.readTextFile("E:\\workspace\\flink-scala\\src\\main\\resources\\sensors.txt")
+    val dataStream: DataStream[Sensor] = dataFromFile.map(data => {
       val array = data.split(",")
       new Sensor(array(0).trim, array(1).trim.toLong, array(2).trim.toDouble)
     })
-
-    //窗口分类：固定时间窗口、滑动时间窗口、滚动计数窗口，滑动计数窗口，window/timeWindow/countWindow
-    //window方法必须在keyBy后才能用，windowAll可以用在之前但一般不用
-    //allowedLateness窗口延迟关闭，控制窗口的销毁
+    //泛型为侧输出流要输出的数据格式
+    val tag: OutputTag[Sensor] = new OutputTag[Sensor]("hot")
     val result = dataStream
-      .process(new HotAlarm())
+      .process(new HotAlarm(tag))
 
-
-    dataStream.print("in:")
     //获取侧输出流信息
-    val sideOutPut = result.getSideOutput(new OutputTag[String]("hot"))
-    sideOutPut.print("侧输出流")
+    val sideOutPut: DataStream[Sensor] = result.getSideOutput(tag)
+    sideOutPut.print("侧输出流:")
 
     result.print("out:")
-
     env.execute("TransformTest")
   }
 }
@@ -59,14 +44,10 @@ object SideOutPutTest {
 /**
   * 如果温度过高，输出报警信息到侧输出流
   */
-class HotAlarm extends ProcessFunction[Sensor, Sensor] {
-
-  //泛型为侧输出流要输出的数据类型
-  lazy val alarmOutPutStream = new OutputTag[String]("hot")
-
+class HotAlarm(alarmOutPutStream:OutputTag[Sensor]) extends ProcessFunction[Sensor, Sensor] {
   override def processElement(sensor: Sensor, context: ProcessFunction[Sensor, Sensor]#Context, collector: Collector[Sensor]): Unit = {
     if (sensor.temperature > 0.5) {
-      context.output(alarmOutPutStream, "高温报警流")
+      context.output(alarmOutPutStream, sensor)
     } else {
       collector.collect(sensor)
     }

@@ -75,7 +75,7 @@ object WindowTest {
 
     dataStream.print("in")
     val sideOutPutStream = result.getSideOutput(outputTag)
-    sideOutPutStream.print("侧输出流:")
+    sideOutPutStream.print("窗口watermark和allowedLateness之后依然迟到的流数据:")
     result.print("out")
 
     env.execute("TransformTest")
